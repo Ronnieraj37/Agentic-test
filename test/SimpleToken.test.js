@@ -67,3 +67,36 @@ describe("SimpleToken", function () {
     });
   });
 });
+
+  describe('Pause functionality', function () {
+    it('should allow owner to pause and unpause', async function () {
+      await simpleToken.pause();
+      expect(await simpleToken.paused()).to.equal(true);
+      
+      await simpleToken.unpause();
+      expect(await simpleToken.paused()).to.equal(false);
+    });
+    
+    it('should prevent non-owners from pausing', async function () {
+      await expect(simpleToken.connect(addr1).pause()).to.be.reverted;
+    });
+    
+    it('should prevent transfers when paused', async function () {
+      await simpleToken.mint(owner.address, 100);
+      await simpleToken.pause();
+      
+      await expect(simpleToken.transfer(addr1.address, 10)).to.be.reverted;
+      await simpleToken.unpause();
+      await simpleToken.transfer(addr1.address, 10);
+      expect(await simpleToken.balanceOf(addr1.address)).to.equal(10);
+    });
+    
+    it('should prevent minting when paused', async function () {
+      await simpleToken.pause();
+      await expect(simpleToken.mint(addr1.address, 1000)).to.be.reverted;
+      
+      await simpleToken.unpause();
+      await simpleToken.mint(addr1.address, 1000);
+      expect(await simpleToken.balanceOf(addr1.address)).to.equal(1000);
+    });
+  });
