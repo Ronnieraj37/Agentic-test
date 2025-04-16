@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @title SimpleToken
  * @dev A simple ERC20 token with mint and burn capabilities
  */
-contract SimpleToken is ERC20, Ownable {
+contract SimpleToken is ERC20, Ownable, Pausable {
     /**
      * @dev Constructor that initializes the token with name and symbol
      */
@@ -19,7 +19,7 @@ contract SimpleToken is ERC20, Ownable {
      * @param to The address that will receive the minted tokens
      * @param amount The amount of tokens to mint
      */
-    function mint(address to, uint256 amount) public onlyOwner {
+    function mint(address to, uint256 amount) public onlyOwner whenNotPaused {
         _mint(to, amount);
     }
 
@@ -39,4 +39,20 @@ contract SimpleToken is ERC20, Ownable {
     function burn(uint256 amount) public {
         _burn(msg.sender, amount);
     }
+
+    /**
+         * @dev Pause token transfers and operations
+         * Only callable by owner
+         */
+        function pause() public onlyOwner {
+            _pause();
+        }
+    
+        /**
+         * @dev Unpause token transfers and operations
+         * Only callable by owner
+         */
+        function unpause() public onlyOwner {
+            _unpause();
+        }
 }
