@@ -39,4 +39,51 @@ contract SimpleToken is ERC20, Ownable {
     function burn(uint256 amount) public {
         _burn(msg.sender, amount);
     }
+
+    /**
+         * @dev Pauses all token transfers.
+         * Requirements:
+         * - the caller must be the owner.
+         */
+        function pause() public onlyOwner {
+            _pause();
+        }
+    
+        /**
+         * @dev Unpauses all token transfers.
+         * Requirements:
+         * - the caller must be the owner.
+         */
+        function unpause() public onlyOwner {
+            _unpause();
+        }
 }
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
+contract SimpleToken is ERC20, Ownable, Pausable {
+
+    function mint(address to, uint256 amount) public onlyOwner whenNotPaused {
+        _mint(to, amount);
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override whenNotPaused {
+        super._transfer(from, to, amount);
+    }
+
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal override whenNotPaused {
+        super._approve(owner, spender, amount);
+    }

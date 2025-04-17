@@ -15,6 +15,23 @@ describe("SimpleToken", function () {
 
   describe("Deployment", function () {
     it("Should set the right owner", async function () {
+  it("Should allow owner to pause and unpause", async function () {
+    await simpleToken.pause();
+    await expect(simpleToken.mint(addr1.address, 50)).to.be.reverted;
+    await expect(simpleToken.connect(addr1).transfer(addr2.address, 10)).to.be.reverted;
+    
+    await simpleToken.unpause();
+    await simpleToken.mint(addr1.address, 50);
+    await simpleToken.connect(addr1).transfer(addr2.address, 10);
+    expect(await simpleToken.balanceOf(addr2.address)).to.equal(10);
+  });
+
+  it("Should not allow non-owners to pause", async function () {
+    await expect(simpleToken.connect(addr1).pause()).to.be.reverted;
+    await expect(simpleToken.connect(addr1).unpause()).to.be.reverted;
+  });
+
+  
       expect(await simpleToken.owner()).to.equal(owner.address);
     });
 
