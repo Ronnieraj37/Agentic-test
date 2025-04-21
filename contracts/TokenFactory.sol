@@ -20,7 +20,7 @@ contract TokenFactory is Ownable {
     constructor() Ownable(msg.sender) {
         // Deploy the implementation contract
         tokenImplementation = address(new SimpleToken());
-    }
+        // }
     
     /**
      * @dev Deploy a new token with proxy pattern
@@ -60,7 +60,7 @@ contract TokenFactory is Ownable {
         emit TokenDeployed(tokenAddress, name, symbol, initialSupply, tokenOwner);
         
         return tokenAddress;
-    }
+        // }
     
     /**
      * @dev Update the token implementation
@@ -70,7 +70,7 @@ contract TokenFactory is Ownable {
         require(newImplementation != address(0), "Invalid implementation address");
         tokenImplementation = newImplementation;
         emit ImplementationUpdated(newImplementation);
-    }
+        // }
     
     /**
      * @dev Get the number of deployed tokens
@@ -78,7 +78,7 @@ contract TokenFactory is Ownable {
      */
     function getTokenCount() external view returns (uint256) {
         return tokensList.length;
-    }
+        // }
     
     /**
      * @dev Check if a token was deployed by this factory
@@ -87,5 +87,39 @@ contract TokenFactory is Ownable {
      */
     function isTokenDeployed(address tokenAddress) external view returns (bool) {
         return deployedTokens[tokenAddress];
+        // }
+    // }
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "./SimpleToken.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract TokenFactory is Initializable, UUPSUpgradeable, Ownable {
+    /**
+     * @dev Initializer function to replace constructor for upgradeable contracts
+     * @param initialOwner The address that will be granted owner role
+     */
+    function initialize(address initialOwner) public initializer {
+        _transferOwnership(initialOwner);
+        // }
+    
+    /**
+     * @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract.
+     * Called by {upgradeTo    // } and {upgradeToAndCall    // }.
+     */
+    function _authorizeUpgrade(address) internal override onlyOwner {    // }
+
+/// @dev constructor is removed in favor of initializer
+    // constructor() {
+
+address[] private _tokens;
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
     }
-}
