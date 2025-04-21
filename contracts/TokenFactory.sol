@@ -89,3 +89,68 @@ contract TokenFactory is Ownable {
         return deployedTokens[tokenAddress];
     }
 }
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "./SimpleToken.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+
+contract TokenFactory is Initializable, UUPSUpgradeable {
+    address[] public deployedTokens;
+    mapping(address => address[]) public userTokens;
+    address private _owner;
+    
+    event TokenDeployed(address tokenAddress, address owner, string name, string symbol);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    
+    modifier onlyOwner() {
+        require(_owner == msg.sender, "TokenFactory: caller is not the owner");
+        _;
+    }
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+    
+    function initialize(address initialOwner) public initializer {
+        _owner = initialOwner;
+        emit OwnershipTransferred(address(0), initialOwner);
+    }
+    
+    function createToken(string memory name, string memory symbol, uint256 initialSupply) public returns (address) {
+        SimpleToken newToken = new SimpleToken(name, symbol, initialSupply, msg.sender);
+        address tokenAddress = address(newToken);
+        
+        deployedTokens.push(tokenAddress);
+        userTokens[msg.sender].push(tokenAddress);
+        
+        emit TokenDeployed(tokenAddress, msg.sender, name, symbol);
+        
+        return tokenAddress;
+    }
+    
+    function getDeployedTokens() public view returns (address[] memory) {
+        return deployedTokens;
+    }
+    
+    function getUserTokens(address user) public view returns (address[] memory) {
+        return userTokens[user];
+    }
+    
+    function owner() public view returns (address) {
+        return _owner;
+    }
+    
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "TokenFactory: new owner is the zero address");
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+    
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}
